@@ -1,0 +1,30 @@
+---
+- name: Instalar e Configurar Chrony
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Instalar Chrony
+      package:
+        name: chrony
+        state: present
+
+    - name: Habilitar e Iniciar Chrony
+      systemd:
+        name: chronyd
+        enabled: yes
+        state: started
+
+    - name: Configurar o Servidor NTP no Chrony
+      lineinfile:
+        path: /etc/chrony.conf
+        regexp: "^pool "
+        line: "pool time.google.com iburst"
+        backup: yes
+      notify: Restart chronyd
+
+  handlers:
+    - name: Restart chronyd
+      systemd:
+        name: chronyd
+        state: restarted
